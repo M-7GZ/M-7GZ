@@ -1,5 +1,7 @@
-import os
+# final code
 
+import os
+import re  # Added for regex support
 
 def ask_for_file_location():
     while True:
@@ -14,26 +16,26 @@ def ask_for_file_location():
 
 
 def starting_line(prompt="What is the first line of data? "):
-        while True:
-            user_input = input(prompt)
-            try:
-                value = int(user_input)
-                if value > 0:  # Ensure the line number is positive
-                    return value
-                else:
-                    print("Line number must be positive. Please try again.")
-            except ValueError:
-                print("Invalid input. Please enter a valid integer.")
+    while True:
+        user_input = input(prompt)
+        try:
+            value = int(user_input)
+            if value > 0:  # Ensure the line number is positive
+                return value
+            else:
+                print("Line number must be positive. Please try again.")
+        except ValueError:
+            print("Invalid input. Please enter a valid integer.")
 
 
 def extract_data():
     # Get the starting line number from the user
     line_number = starting_line()
-    # Skip lines until reaching line 78
+    # Skip lines until reaching the specified starting line
     for _ in range(line_number-1):
         next(f_in)
 
-      # Iterate through each line starting from line 78
+    # Iterate through each line starting from the specified line
     for line in f_in:
         # Check if the line is empty or does not contain enough fields
         if not line.strip() or len(line.strip().split('\t')) < 8:
@@ -81,7 +83,11 @@ def remove_lines_with_keywords(input_file_path, keywords):
     with open(input_file_path, 'r') as input_file:
         lines = input_file.readlines()
 
-    filtered_lines = [line for line in lines if not any(keyword in line for keyword in keywords)]
+    # Filter out lines containing any keyword or word starting with 'PY00'
+    filtered_lines = [
+        line for line in lines
+        if not any(keyword in line for keyword in keywords) and not re.search(r'\bPY00\w*', line)
+    ]
 
     with open(output_file_path, 'w') as output_file:
         output_file.writelines(filtered_lines)
@@ -105,16 +111,12 @@ if __name__ == "__main__":
         print("Output file:", output_file_path)
         extract_data()
 
-
-    #part 2
-    # Prompt user for input file location
-    #input_file_path = input("Enter the input file location: ")
+    # Part 2: Remove specified keywords and lines with words starting with "PY00"
     input_file_path = output_file_path
-    # Prompt user for keywords to remove (separated by commas)
-    keywords_input = input("Enter the keywords to remove (separated by commas without space before or after): ")
+    keywords_input = input("Enter the keywords to remove (separated by commas): ")
     keywords = [keyword.strip() for keyword in keywords_input.split(",")]
 
-    # Remove lines containing keywords and save the result into the output file
+    # Remove lines containing keywords or starting with "PY00" and save to the output file
     output_file_path = remove_lines_with_keywords(input_file_path, keywords)
 
-    print("Lines containing the specified keywords removed from the input file and saved into the output file")
+    print("Lines containing the specified keywords or words starting with 'PY00' removed from the input file and saved into the output file")
